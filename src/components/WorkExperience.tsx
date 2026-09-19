@@ -1,10 +1,7 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import SkillSpace from './SkillSpace';
-import { Briefcase, Calendar, ChevronRight, ChevronDown, Sparkles } from 'lucide-react';
-
-type Highlight = { title: string; points: string[] };
+import { Briefcase, Calendar, ArrowDownRight } from 'lucide-react';
 
 type Job = {
   id: string;
@@ -13,7 +10,8 @@ type Job = {
   period: string;
   current?: boolean;
   summary?: string;
-  highlights?: Highlight[];
+  /** Project names; the details live in the Projects section. */
+  projects?: string[];
   tags?: string[];
 };
 
@@ -24,25 +22,8 @@ const JOBS: Job[] = [
     org: 'Sala',
     period: 'Nov 2025 – Present',
     current: true,
-    summary: 'Building LLM-powered products end to end — retrieval pipelines, backend services, observability, and cloud deployment.',
-    highlights: [
-      {
-        title: 'Multi-School AI Assistant',
-        points: [
-          'Designed a CRAG-style (Corrective RAG) pipeline: hybrid vector + keyword search, RRF fusion, reranking, and an LLM grader that retries with a broadened query, falls back to document-level search, or abstains instead of guessing.',
-          'Bilingual English / Khmer answers with page-level citations.',
-          'Isolated every school’s data at the database level with PostgreSQL Row-Level Security.',
-          'Traced every query with Langfuse and built a retrieval debugging CLI.',
-          'Deployed to Kubernetes (AWS) through a CI/CD pipeline with health-checked rollouts; 250+ automated tests.',
-        ],
-      },
-      {
-        title: 'Hero by Sala — AI Career Platform',
-        points: [
-          'RAG-powered personalised skill roadmaps, pgvector career matching, and AI-generated trial tasks for Cambodian students.',
-        ],
-      },
-    ],
+    summary: 'Building LLM products end to end — RAG pipelines, backend services, and cloud deployment.',
+    projects: ['Multi-School AI Assistant (CRAG)', 'Hero by Sala — AI Career Platform'],
     tags: ['CRAG', 'pgvector', 'NestJS', 'FastAPI', 'RabbitMQ', 'Langfuse', 'Kubernetes', 'AWS', 'Vue.js'],
   },
   {
@@ -70,8 +51,6 @@ const JOBS: Job[] = [
 
 const JobCard = ({ job, index }: { job: Job; index: number }) => {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
-  const [expanded, setExpanded] = useState(false);
-  const pointCount = job.highlights?.reduce((n, h) => n + h.points.length, 0) ?? 0;
 
   return (
     <motion.div
@@ -117,58 +96,18 @@ const JobCard = ({ job, index }: { job: Job; index: number }) => {
           <p className="text-sm text-muted-foreground leading-relaxed mt-3">{job.summary}</p>
         )}
 
-        {job.highlights && (
-          <>
-            {/* Collapsed: project names only */}
-            {!expanded && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {job.highlights.map(h => (
-                  <span key={h.title} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-secondary/10 text-secondary border border-secondary/20">
-                    <Sparkles className="w-3 h-3" /> {h.title}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Expanded: full description */}
-            <AnimatePresence initial={false}>
-              {expanded && (
-                <motion.div
-                  key="details"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="overflow-hidden"
-                >
-                  {job.highlights.map(h => (
-                    <div key={h.title} className="mt-5">
-                      <h4 className="flex items-center gap-2 font-heading text-sm font-bold text-foreground mb-2">
-                        <Sparkles className="w-3.5 h-3.5 text-secondary" /> {h.title}
-                      </h4>
-                      <ul className="space-y-1.5">
-                        {h.points.map(p => (
-                          <li key={p} className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed">
-                            <ChevronRight className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-1" />
-                            <span>{p}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <button
-              onClick={() => setExpanded(e => !e)}
-              aria-expanded={expanded}
-              className="flex items-center gap-1 mt-4 text-xs font-heading font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              {expanded ? 'Show less' : `Show details (${pointCount})`}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
-            </button>
-          </>
+        {job.projects && (
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            {job.projects.map(name => (
+              <button
+                key={name}
+                onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors"
+              >
+                {name} <ArrowDownRight className="w-3 h-3" />
+              </button>
+            ))}
+          </div>
         )}
 
         {job.tags && (

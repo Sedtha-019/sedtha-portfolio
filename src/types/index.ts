@@ -11,6 +11,8 @@ export interface Project {
   isPrivate?: boolean;
   /** Draw a diagram instead of a screenshot (private projects). */
   diagram?: 'crag';
+  /** Key points shown as bullets on featured cards. */
+  points?: string[];
   /** Short facts shown as chips on featured cards. */
   highlights?: string[];
 }

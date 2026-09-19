@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, ExternalLink, Lock, Star, Flame, Car, Scan, Server, FileText, Bot } from 'lucide-react';
+import { Github, ExternalLink, Lock, Star, ChevronRight, Flame, Car, Scan, Server, FileText, Bot } from 'lucide-react';
 import type { Project } from '../types';
 import CragDiagram from './CragDiagram';
 
@@ -8,7 +8,14 @@ const projects: Project[] = [
   {
     id: '9',
     title: 'Multi-School AI Assistant — CRAG',
-    description: 'Bilingual (English / Khmer) assistant that answers staff questions from their own school’s documents. A CRAG-style (Corrective RAG) pipeline combines hybrid vector + keyword search, RRF fusion, and reranking, then an LLM grader checks whether the retrieved context is enough. If not, it retries with a broadened query, falls back to document-level search, and says "I don’t know" rather than guessing. Every answer cites its source pages, each school’s data is isolated with PostgreSQL Row-Level Security, every query is traced in Langfuse, and the services ship to Kubernetes on AWS through CI/CD.',
+    description: 'Bilingual (English / Khmer) assistant that answers staff questions from their own school’s documents, citing the source pages.',
+    points: [
+      'CRAG-style (Corrective RAG) pipeline: hybrid vector + keyword search, RRF fusion, and reranking.',
+      'An LLM grader checks the retrieved context — if it isn’t enough, it retries with a broadened query, falls back to document-level search, or says “I don’t know” instead of guessing.',
+      'Each school’s data isolated at the database level with PostgreSQL Row-Level Security.',
+      'Every query traced with Langfuse, plus a retrieval debugging CLI.',
+      'Deployed to Kubernetes (AWS) through CI/CD with health-checked rollouts; 250+ automated tests.',
+    ],
     image: '',
     diagram: 'crag',
     category: 'LLM & RAG',
@@ -171,15 +178,27 @@ const FeaturedCard = ({ project, index }: { project: Project; index: number }) =
               {project.title}
             </h2>
           </div>
-          <p className={`text-sm text-muted-foreground leading-relaxed mb-2 ${expanded ? '' : 'line-clamp-3'}`}>
+          <p className={`text-sm text-muted-foreground leading-relaxed mb-2 ${expanded || project.points ? '' : 'line-clamp-3'}`}>
             {project.description}
           </p>
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="text-xs text-primary hover:text-primary/80 font-medium mb-5 transition-colors"
-          >
-            {expanded ? 'Show less ↑' : 'Read more ↓'}
-          </button>
+          {project.points && (
+            <ul className="space-y-1.5 mb-2">
+              {(expanded ? project.points : project.points.slice(0, 3)).map(p => (
+                <li key={p} className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed">
+                  <ChevronRight className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-1" />
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {(!project.points || project.points.length > 3) && (
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="text-xs text-primary hover:text-primary/80 font-medium mb-5 transition-colors"
+            >
+              {expanded ? 'Show less ↑' : 'Read more ↓'}
+            </button>
+          )}
           {project.highlights && (
             <div className="flex flex-wrap gap-2 mb-5">
               {project.highlights.map(h => (
