@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import SkillSpace from './SkillSpace';
 import { Briefcase, Calendar, ChevronRight, ChevronDown, Sparkles } from 'lucide-react';
 
 type Highlight = { title: string; points: string[] };
@@ -205,8 +206,17 @@ const WorkExperience = () => {
           </p>
         </motion.div>
 
-        <div className="max-w-3xl">
-          {JOBS.map((job, i) => <JobCard key={job.id} job={job} index={i} />)}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-10 xl:gap-14">
+          <div className="max-w-3xl">
+            {JOBS.map((job, i) => <JobCard key={job.id} job={job} index={i} />)}
+          </div>
+
+          {/* Passion panel — stays in view while the timeline scrolls */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <SkillSpace />
+            </div>
+          </aside>
         </div>
       </div>
     </div>
