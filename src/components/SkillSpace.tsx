@@ -31,13 +31,15 @@ const CLUSTERS: { key: ClusterKey; label: string; center: [number, number, numbe
   },
 ];
 
-const QUERIES: { text: string; neighbors: [string, string, string] }[] = [
-  { text: 'build a RAG chatbot',        neighbors: ['CRAG', 'pgvector', 'Rerank'] },
-  { text: 'teach a car to drive',       neighbors: ['PPO', 'CARLA', 'Stable-Baselines3'] },
-  { text: 'detect fire in video',       neighbors: ['YOLO', 'OpenCV', 'Faster R-CNN'] },
-  { text: 'ship it to the cloud',       neighbors: ['Kubernetes', 'Docker', 'AWS'] },
-  { text: 'is the answer faithful?',    neighbors: ['RAGAS', 'DeepEval', 'LLM-as-Judge'] },
-  { text: 'summarize Khmer text',       neighbors: ['Transformers', 'LoRA', 'mBART'] },
+// `dir` points from the cluster's centre to where this query's
+// sub-topic sits (on the cluster's outer side).
+const QUERIES: { text: string; neighbors: [string, string, string]; dir: [number, number, number] }[] = [
+  { text: 'build a RAG chatbot',        neighbors: ['CRAG', 'pgvector', 'Rerank'],                dir: [-0.8, 0.1, 0.6] },
+  { text: 'teach a car to drive',       neighbors: ['PPO', 'CARLA', 'Stable-Baselines3'],          dir: [0.7, 0.5, -0.5] },
+  { text: 'detect fire in video',       neighbors: ['YOLO', 'OpenCV', 'Faster R-CNN'],             dir: [0.9, -0.1, 0.4] },
+  { text: 'ship it to the cloud',       neighbors: ['Kubernetes', 'Docker', 'AWS'],                dir: [-0.5, -0.5, -0.7] },
+  { text: 'is the answer faithful?',    neighbors: ['RAGAS', 'DeepEval', 'LLM-as-Judge'],          dir: [-0.5, 0.8, -0.3] },
+  { text: 'summarize Khmer text',       neighbors: ['Transformers', 'LoRA', 'mBART'],              dir: [0.2, -0.9, 0.4] },
 ];
 
 const FORM_SECONDS = 1.8;
@@ -45,6 +47,8 @@ const QUERY_SECONDS = 4.8;
 const AUTO_SPIN = 0.18; // rad / s
 const CAMERA = 4.2;
 const BASE_PITCH = 0.32;
+const SUB_OFFSET = 0.42;  // how far a query's sub-topic sits from its cluster centre
+const QUERY_REACH = 0.3;  // how far beyond the sub-topic the query star lands
 
 // Fades the cloud into the page, so it has no visible edge.
 const MASK = 'radial-gradient(ellipse 58% 60% at 55% 50%, #000 40%, transparent 100%)';
@@ -73,6 +77,29 @@ function buildPoints(): Point[] {
       points.push({ name, cluster: c.key, home, start, phase: rand() * Math.PI * 2, links: [] });
     }
   }
+  // Skills that answer the same query form a tight sub-topic on the
+  // outer side of their cluster, and the query lands just beyond it -
+  // so they really are that query's nearest neighbours.
+  const inGroup = new Set(QUERIES.flatMap(q => q.neighbors));
+  const spots = QUERIES.map(q => {
+    const cluster = CLUSTERS.find(c => c.skills.includes(q.neighbors[0]))!;
+    const d = unit(q.dir);
+    return { sub: add(cluster.center, scale(d, SUB_OFFSET)), at: add(cluster.center, scale(d, SUB_OFFSET + QUERY_REACH)), q };
+  });
+  for (const { sub, q } of spots) {
+    for (const name of q.neighbors) {
+      const p = points.find(x => x.name === name);
+      if (p) p.home = [sub[0] + gauss() * 0.1, sub[1] + gauss() * 0.1, sub[2] + gauss() * 0.1];
+    }
+  }
+  // Keep every other skill clear of those sub-topics and query spots.
+  for (const p of points) {
+    if (inGroup.has(p.name)) continue;
+    for (const { sub, at } of spots) {
+      p.home = pushAway(p.home, sub, 0.42);
+      p.home = pushAway(p.home, at, QUERY_REACH + 0.3);
+    }
+  }
   // Connect each skill to its two nearest neighbours in the same cluster.
   points.forEach((p, i) => {
     p.links = points
@@ -85,12 +112,49 @@ function buildPoints(): Point[] {
   return points;
 }
 
-const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+function centroid(vs: Vec3[]): Vec3 {
+  const c: Vec3 = [0, 0, 0];
+  for (const v of vs) { c[0] += v[0] / vs.length; c[1] += v[1] / vs.length; c[2] += v[2] / vs.length; }
+  return c;
+}
+function add(a: Vec3, b: Vec3): Vec3 { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function scale(a: Vec3, k: number): Vec3 { return [a[0] * k, a[1] * k, a[2] * k]; }
+function unit(a: Vec3): Vec3 { return scale(a, 1 / Math.hypot(a[0], a[1], a[2])); }
+function dist(a: Vec3, b: Vec3) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
+// Moves `p` out to at least `min` away from `from`.
+function pushAway(p: Vec3, from: Vec3, min: number): Vec3 {
+  const d = dist(p, from);
+  if (d >= min) return p;
+  const dir = d > 1e-6 ? scale([p[0] - from[0], p[1] - from[1], p[2] - from[2]], 1 / d) : [0, 1, 0] as Vec3;
+  return add(from, scale(dir, min));
+}
 const easeOut = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
 const POINTS = buildPoints();
 const INDEX = new Map(POINTS.map((p, i) => [p.name, i]));
+
+// Each query's real top-3 in the cloud. The query sits just beyond its
+// sub-topic; similarity = 1 - distance / 4, so the numbers shown match
+// what the visitor sees.
+const QUERY_INFO = QUERIES.map(q => {
+  const anchors = q.neighbors.map(n => INDEX.get(n)).filter((i): i is number => i !== undefined);
+  const lift = scale(unit(q.dir), QUERY_REACH);
+  const at = add(centroid(anchors.map(i => POINTS[i].home)), lift);
+  const top = POINTS
+    .map((p, i) => ({ i, d: dist(p.home, at) }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 3)
+    .map(({ i, d }) => ({ i, name: POINTS[i].name, cluster: POINTS[i].cluster, score: 1 - d / 4 }));
+  return { text: q.text, anchors, lift, top };
+});
+
+const CLUSTER_TEXT: Record<ClusterKey, string> = {
+  llm: 'text-secondary',
+  rl: 'text-primary',
+  cv: 'text-emerald-600 dark:text-emerald-400',
+  data: 'text-amber-600 dark:text-amber-400',
+};
 
 type Palette = Record<ClusterKey, string> & { text: string; muted: string; labelBg: string };
 
@@ -116,6 +180,12 @@ const SkillSpace = () => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [reduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
+
+  // Text overlay: which query, how much of the command is typed, how
+  // many results are shown. Opacity is set directly, every frame.
+  const [hud, setHud] = useState({ q: 0, typed: 0, shown: 0 });
+  const captionRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const paletteRef = useRef<{ pal: Palette; dark: boolean } | null>(null);
   useEffect(() => { paletteRef.current = { pal: readPalette(theme === 'dark'), dark: theme === 'dark' }; }, [theme]);
@@ -159,6 +229,7 @@ const SkillSpace = () => {
 
     let prev = performance.now();
     let raf = 0;
+    let hudQ = -1, hudTyped = -1, hudShown = -1;
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -184,7 +255,7 @@ const SkillSpace = () => {
         const y2 = v[1] * cp - z1 * sp;
         const z2 = v[1] * sp + z1 * cp;
         const scale = CAMERA / (CAMERA - z2);
-        return { x: width * 0.55 + x1 * scale * unit, y: height / 2 - y2 * scale * unit, s: scale, z: z2 };
+        return { x: width * 0.55 + x1 * scale * unit, y: height * 0.44 - y2 * scale * unit, s: scale, z: z2 };
       };
 
       const form = easeOut(elapsed / FORM_SECONDS);
@@ -220,18 +291,27 @@ const SkillSpace = () => {
       });
 
       // Query: fly in → draw links → hold → fade
-      const query = QUERIES[qIdx];
-      const neighborIdx = query.neighbors.map(n => INDEX.get(n)).filter((i): i is number => i !== undefined);
+      const query = QUERY_INFO[qIdx];
+      const neighborIdx = query.top.map(n => n.i);
       const active = form >= 1 && neighborIdx.length > 0;
       const qFade = active ? (qt < 0.85 ? 1 : 1 - (qt - 0.85) / 0.15) : 0;
-      const target: Vec3 = [0, 0, 0];
-      neighborIdx.forEach(i => { target[0] += world[i][0] / 3; target[1] += world[i][1] / 3; target[2] += world[i][2] / 3; });
-      target[1] += 0.35;
+      const target = add(centroid(query.anchors.map(i => world[i])), query.lift);
       const fly = easeOut(qt / 0.18);
       const from: Vec3 = [target[0] * 2.4, 2.2, target[2] * 2.4];
       const qPos: Vec3 = [from[0] + (target[0] - from[0]) * fly, from[1] + (target[1] - from[1]) * fly, from[2] + (target[2] - from[2]) * fly];
       const q = project(qPos);
       const linkProgress = easeOut((qt - 0.18) / 0.15);
+
+      // Text overlay, in step with the animation
+      const command = `embed("${query.text}")`;
+      const typed = active ? Math.round(command.length * clamp01(qt / 0.18)) : 0;
+      const shown = active ? Math.min(3, Math.floor(linkProgress * 3.01)) : 0;
+      if (qIdx !== hudQ || typed !== hudTyped || shown !== hudShown) {
+        hudQ = qIdx; hudTyped = typed; hudShown = shown;
+        setHud({ q: qIdx, typed, shown });
+      }
+      if (searchRef.current) searchRef.current.style.opacity = String(qFade);
+      if (captionRef.current) captionRef.current.style.opacity = String(clamp01((elapsed - FORM_SECONDS * 0.8) / 0.8));
 
       if (active) {
         ctx.lineWidth = 1.4;
@@ -321,14 +401,38 @@ const SkillSpace = () => {
     };
   }, [reduced]);
 
+  const info = QUERY_INFO[hud.q];
+  const command = `embed("${info.text}")`;
+
   return (
-    <div
-      ref={wrapRef}
-      aria-hidden="true"
-      className="relative w-full h-full pointer-events-none"
-      style={{ maskImage: MASK, WebkitMaskImage: MASK }}
-    >
-      <canvas ref={canvasRef} className="absolute inset-0" />
+    <div aria-hidden="true" className="relative w-full h-full pointer-events-none">
+      <div ref={wrapRef} className="absolute inset-0" style={{ maskImage: MASK, WebkitMaskImage: MASK }}>
+        <canvas ref={canvasRef} className="absolute inset-0" />
+      </div>
+
+      {/* What this is, plus a live readout of the current search */}
+      <div className="absolute left-[55%] -translate-x-1/2 bottom-[7%] w-max max-w-[92%] font-mono text-xs leading-relaxed">
+        <div ref={captionRef} style={{ opacity: 0 }} className="transition-none">
+          <p className="text-muted-foreground/80">{'// my skills, embedded'}</p>
+          <p className="text-muted-foreground/60">each dot is a skill · closer = more related</p>
+        </div>
+        <div ref={searchRef} style={{ opacity: 0 }} className="mt-2 min-h-[2.5rem]">
+          <p className="text-foreground/80">
+            <span className="text-primary">&gt;</span> {command.slice(0, hud.typed)}
+            {hud.typed < command.length && <span className="animate-pulse text-primary">▍</span>}
+          </p>
+          <p className="text-muted-foreground/70">
+            {hud.shown > 0 && <span className="text-primary">→ top-3: </span>}
+            {info.top.slice(0, hud.shown).map((n, k) => (
+              <span key={n.name}>
+                {k > 0 && <span className="text-muted-foreground/40"> · </span>}
+                <span className={CLUSTER_TEXT[n.cluster]}>{n.name}</span>{' '}
+                <span className="text-muted-foreground/80">{n.score.toFixed(2)}</span>
+              </span>
+            ))}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
