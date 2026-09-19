@@ -190,7 +190,14 @@ const WorkExperience = () => {
 
   return (
     <div className="py-24 relative">
-      <div className="container mx-auto px-4 sm:px-8">
+      {/* Background layer: skill cloud behind the timeline, stays in view while scrolling */}
+      <div aria-hidden="true" className="hidden lg:block absolute inset-y-0 right-0 w-[58%] pointer-events-none z-0">
+        <div className="sticky top-0 h-screen">
+          <SkillSpace />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-8 relative z-10">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: -20 }}
@@ -206,17 +213,8 @@ const WorkExperience = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-10 xl:gap-14">
-          <div className="max-w-3xl">
-            {JOBS.map((job, i) => <JobCard key={job.id} job={job} index={i} />)}
-          </div>
-
-          {/* Passion panel — stays in view while the timeline scrolls */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">
-              <SkillSpace />
-            </div>
-          </aside>
+        <div className="max-w-3xl">
+          {JOBS.map((job, i) => <JobCard key={job.id} job={job} index={i} />)}
         </div>
       </div>
     </div>
