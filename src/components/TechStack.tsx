@@ -23,6 +23,10 @@ const ROW1: Logo[] = [
   { name: 'PostgreSQL',   src: `${DI}postgresql/postgresql-original.svg` },
   { name: 'FastAPI',      src: `${DI}fastapi/fastapi-original.svg` },
   { name: 'AWS',          src: `${SI}amazonwebservices` },
+  { name: 'Kubernetes',   src: `${DI}kubernetes/kubernetes-original.svg` },
+  { name: 'TypeScript',   src: `${DI}typescript/typescript-original.svg` },
+  { name: 'NestJS',       src: `${DI}nestjs/nestjs-original.svg` },
+  { name: 'RabbitMQ',     src: `${DI}rabbitmq/rabbitmq-original.svg` },
 ];
 
 const ROW2: Logo[] = [
@@ -38,6 +42,10 @@ const ROW2: Logo[] = [
   { name: 'Hugging Face', src: `${SI}huggingface` },
   { name: 'Power BI',     src: `${SI}powerbi` },
   { name: 'Gradio',       src: `${SI}gradio` },
+  { name: 'Vue.js',       src: `${DI}vuejs/vuejs-original.svg` },
+  { name: 'Redis',        src: `${DI}redis/redis-original.svg` },
+  { name: 'Keycloak',     src: `${SI}keycloak` },
+  { name: 'Gitea',        src: `${SI}gitea` },
 ];
 
 /* ------------------------------------------------------------------ */

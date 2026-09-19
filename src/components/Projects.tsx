@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, ExternalLink, Lock, Star, Network, Flame, Car, Scan, Server, FileText, Bot } from 'lucide-react';
+import { Github, ExternalLink, Lock, Star, Flame, Car, Scan, Server, FileText, Bot } from 'lucide-react';
 import type { Project } from '../types';
+import CragDiagram from './CragDiagram';
 
 const projects: Project[] = [
+  {
+    id: '9',
+    title: 'Multi-School AI Assistant — CRAG',
+    description: 'Bilingual (English / Khmer) assistant that answers staff questions from their own school’s documents. A CRAG-style (Corrective RAG) pipeline combines hybrid vector + keyword search, RRF fusion, and reranking, then an LLM grader checks whether the retrieved context is enough. If not, it retries with a broadened query, falls back to document-level search, and says "I don’t know" rather than guessing. Every answer cites its source pages, each school’s data is isolated with PostgreSQL Row-Level Security, every query is traced in Langfuse, and the services ship to Kubernetes on AWS through CI/CD.',
+    image: '',
+    diagram: 'crag',
+    category: 'LLM & RAG',
+    technologies: ['CRAG', 'Hybrid Search', 'Cohere Rerank', 'pgvector', 'FastAPI', 'NestJS', 'RabbitMQ', 'Langfuse', 'Kubernetes', 'Vue.js'],
+    highlights: ['EN / KH', 'Multi-tenant (RLS)', 'Page citations', '250+ tests'],
+    featured: true,
+    isPrivate: true,
+  },
+  {
+    id: '2',
+    title: 'Hero by Sala — AI Career Platform',
+    description: 'AI-powered career guidance platform for Cambodian students. Five-stage journey: MBTI/Ikigai assessment → vector-based career matching → AI-generated trial tasks → RAG-powered personalised skill roadmap → automated CV generation. Built and shipped as part of an engineering team.',
+    image: 'AI.gif',
+    category: 'LLM & RAG',
+    technologies: ['FastAPI', 'Flutter', 'pgvector', 'RAG', 'Python', 'PostgreSQL', 'OpenRouter'],
+    featured: true,
+    isPrivate: true,
+  },
   {
     id: '1',
     title: 'Autonomous Driving with Deep RL',
@@ -13,16 +36,6 @@ const projects: Project[] = [
     technologies: ['Python', 'PyTorch', 'Stable-Baselines3', 'PPO', 'CARLA', 'gymnasium', 'CNN'],
     githubUrl: 'https://github.com/Sedtha-019',
     featured: true,
-  },
-  {
-    id: '2',
-    title: 'Hero by Sala — AI Career Platform',
-    description: 'AI-powered career guidance platform for Cambodian students. Five-stage journey: MBTI/Ikigai assessment → vector-based career matching → AI-generated trial tasks → RAG-powered personalised skill roadmap → automated CV generation. Built and shipped as part of an engineering team.',
-    image: 'AI.gif',
-    category: 'AI',
-    technologies: ['FastAPI', 'Flutter', 'pgvector', 'RAG', 'Python', 'PostgreSQL', 'OpenRouter'],
-    featured: true,
-    isPrivate: true,
   },
   {
     id: '3',
@@ -87,7 +100,7 @@ const projects: Project[] = [
 const getIcon = (title: string) => {
   if (title.includes('Fire')) return Flame;
   if (title.includes('Vehicle')) return Car;
-  if (title.includes('Hero') || title.includes('Career')) return Bot;
+  if (title.includes('Hero') || title.includes('Career') || title.includes('Assistant')) return Bot;
   if (title.includes('Driving') || title.includes('RL')) return Car;
   if (title.includes('ETL')) return Server;
   if (title.includes('Summarizer') || title.includes('Text')) return FileText;
@@ -108,8 +121,12 @@ const FeaturedCard = ({ project, index }: { project: Project; index: number }) =
       className="glass-card rounded-2xl overflow-hidden group flex flex-col md:flex-row hover:shadow-[0_8px_40px_hsl(var(--primary)/0.08)] transition-shadow duration-400"
     >
       {/* Image panel */}
-      <div className="relative w-full md:w-2/5 h-56 md:h-auto bg-muted/30 overflow-hidden flex-shrink-0 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/50">
-        {imgError ? (
+      <div className={`relative w-full md:w-2/5 ${project.diagram ? 'h-80' : 'h-56'} md:h-auto bg-muted/30 overflow-hidden flex-shrink-0 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/50`}>
+        {project.diagram === 'crag' ? (
+          <div className="w-full h-full px-4 pt-12 pb-10 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <CragDiagram />
+          </div>
+        ) : imgError ? (
           <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center">
             <Icon className="w-20 h-20 text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-500" />
           </div>
@@ -163,6 +180,15 @@ const FeaturedCard = ({ project, index }: { project: Project; index: number }) =
           >
             {expanded ? 'Show less ↑' : 'Read more ↓'}
           </button>
+          {project.highlights && (
+            <div className="flex flex-wrap gap-2 mb-5">
+              {project.highlights.map(h => (
+                <span key={h} className="px-2.5 py-1 rounded-lg text-xs font-heading font-semibold bg-secondary/10 text-secondary border border-secondary/20">
+                  {h}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -279,7 +305,7 @@ const GridCard = ({ project, index }: { project: Project; index: number }) => {
   );
 };
 
-const CATEGORIES = ['All', 'Reinforcement Learning', 'Computer Vision', 'AI', 'Data Engineering', 'NLP'];
+const CATEGORIES = ['All', 'LLM & RAG', 'Reinforcement Learning', 'Computer Vision', 'AI', 'Data Engineering', 'NLP'];
 
 const Projects = () => {
   const [filter, setFilter] = useState('All');
@@ -299,7 +325,7 @@ const Projects = () => {
             Projects
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            A showcase of AI systems, research experiments, and production deployments.
+            A showcase of LLM products, AI systems, and research experiments.
           </p>
         </motion.div>
 

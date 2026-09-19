@@ -1,9 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Download, BookOpen, Award, Briefcase, ChevronRight } from 'lucide-react';
+import { Download, BookOpen, Award, Compass, ChevronRight } from 'lucide-react';
 
-const CARDS = [
+const BASE = import.meta.env.BASE_URL;
+
+type CardItem = { label: string; sub?: string; detail?: string };
+
+const CARDS: { icon: typeof BookOpen; title: string; color: string; bg: string; border: string; glow: string; items: CardItem[] }[] = [
   {
     icon: BookOpen,
     title: 'Education',
@@ -37,7 +41,8 @@ const CARDS = [
     glow: 'from-secondary/8',
     items: [
       { label: 'Reinforcement Learning (PPO, Stable-Baselines3, CARLA)' },
-      { label: 'AI Platform Development (FastAPI, RAG, pgvector)' },
+      { label: 'LLM & RAG Systems (CRAG, Hybrid Search, Reranking, pgvector)' },
+      { label: 'LLMOps & Cloud (Langfuse, Kubernetes, AWS, CI/CD)' },
       { label: 'Machine Learning & Deep Learning (PyTorch, CNNs)' },
       { label: 'Data Engineering (PySpark, Docker, Airflow, AWS S3)' },
       { label: 'NLP & Transformers (Fine-tuning, Khmer Language Models)' },
@@ -45,31 +50,26 @@ const CARDS = [
     ],
   },
   {
-    icon: Briefcase,
-    title: 'Experience',
+    icon: Compass,
+    title: 'Right Now',
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/10',
     border: 'border-emerald-500/20',
     glow: 'from-emerald-500/8',
     items: [
       {
-        label: 'AI Engineer — Sala (Company)',
+        label: 'AI Engineer — Sala',
         sub: 'Nov 2025 – Present',
-        detail: 'Building Hero by Sala: RAG pipelines, pgvector career matching, AI task generation.',
+        detail: 'Building a CRAG-based, multi-school AI assistant and the Hero by Sala career platform.',
       },
       {
-        label: 'AI, ML & Robotics Intern',
-        sub: 'Ministry of Education, Youth and Sport · Jul–Dec 2025',
-        detail: 'Thesis: Scalable ETL Pipeline for Cloud Data (PySpark, AWS S3, Docker, Airflow).',
+        label: 'Learning: RAG evaluation',
+        sub: 'RAGAS · DeepEval',
+        detail: 'Building a test-question set to measure retrieval and answer quality with numbers.',
       },
       {
-        label: 'Data Analyst Intern',
-        sub: 'SEARLE Company · Sep–Oct 2024',
-      },
-      {
-        label: 'Volunteer Interpreter',
-        sub: 'IDP Education · Mar 2024',
-        detail: 'Assisted international students during university orientation.',
+        label: 'Interested in',
+        sub: 'LLM Engineering · LLMOps · Applied RL',
       },
     ],
   },
@@ -127,11 +127,11 @@ const About = () => {
             About Me
           </h2>
           <p className="text-muted-foreground text-lg max-w-3xl leading-relaxed">
-            Final-year Data Science Engineering student at ITC, Cambodia. I build{' '}
+            AI Engineer at Sala with a Data Science Engineering background from ITC, Cambodia. I build{' '}
             <span className="text-foreground font-medium">end-to-end AI systems</span> — from
-            training reinforcement learning agents to drive autonomously in simulation, to developing
-            and shipping <span className="text-foreground font-medium">RAG-powered career guidance platforms</span> in
-            production. Passionate about bridging research and real-world impact.
+            training reinforcement learning agents to drive autonomously in simulation, to shipping{' '}
+            <span className="text-foreground font-medium">LLM and RAG products</span> with the backend,
+            observability, and cloud deployment behind them. Passionate about bridging research and real-world impact.
           </p>
         </motion.div>
 
@@ -146,7 +146,7 @@ const About = () => {
           className="flex justify-start"
         >
           <a
-            href="/SEDTHA MAO_v2.pdf"
+            href={`${BASE}SEDTHA MAO_v2.pdf`}
             download
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-bold bg-primary text-primary-foreground hover:opacity-90 glow-primary hover:-translate-y-0.5 transition-all duration-200"
           >

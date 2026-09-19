@@ -9,6 +9,10 @@ export interface Project {
   liveUrl?: string;
   featured?: boolean;
   isPrivate?: boolean;
+  /** Draw a diagram instead of a screenshot (private projects). */
+  diagram?: 'crag';
+  /** Short facts shown as chips on featured cards. */
+  highlights?: string[];
 }
 
 export interface Experience {

@@ -58,7 +58,7 @@ const CertCard = ({ cert, index }: { cert: typeof certifications[0]; index: numb
   );
 };
 
-const Experience = () => {
+const Training = () => {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -85,4 +85,4 @@ const Experience = () => {
   );
 };
 
-export default Experience;
+export default Training;

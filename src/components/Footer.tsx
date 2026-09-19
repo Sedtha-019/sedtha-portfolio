@@ -8,9 +8,6 @@ const Footer = () => (
         <span className="font-heading font-bold text-gradient">MAO SEDTHA</span>.
         {' '}All rights reserved.
       </p>
-      <p className="text-xs text-muted-foreground/60">
-        Built with React · TypeScript · Tailwind CSS · Framer Motion
-      </p>
     </div>
   </footer>
 );
