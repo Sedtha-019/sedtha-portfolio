@@ -5,7 +5,8 @@ import Home from './components/Home';
 import About from './components/About';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
-import Experience from './components/Experience';
+import WorkExperience from './components/WorkExperience';
+import Training from './components/Training';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import TechStack from './components/TechStack';
@@ -27,9 +28,10 @@ const App: React.FC = () => {
           <section id="home"><Home /></section>
           <TechStack />
           <section id="about"><About /></section>
+          <section id="experience"><WorkExperience /></section>
           <section id="skills"><Skills /></section>
           <section id="projects"><Projects /></section>
-          <section id="experience"><Experience /></section>
+          <section id="training"><Training /></section>
           <Certificates />
           <section id="contact"><Contact /></section>
         </main>

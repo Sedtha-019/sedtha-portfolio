@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { motion } from 'framer-motion';
-import { ArrowRight, BrainCircuit, Car, Bot } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Car, Bot, Cloud } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
    Neural Network SVG Animation
 ───────────────────────────────────────────────────────────── */
 const ARCH = [4, 6, 8, 8, 8, 6, 3];
-const OUTPUT_LABELS = ['RL Agent', 'AI Platform', 'CV & NLP'];
+const OUTPUT_LABELS = ['LLM & RAG', 'RL Agent', 'CV & NLP'];
 const W = 620;
 const H = 260;
 const PX = 36;
@@ -180,6 +180,24 @@ const NeuralNetworkViz = () => (
 ───────────────────────────────────────────────────────────── */
 const COMPETENCIES = [
   {
+    icon: Bot,
+    title: 'LLM & RAG Systems',
+    desc: 'CRAG-style retrieval pipelines — hybrid vector + keyword search, reranking, and an LLM grader that corrects or abstains instead of guessing. Bilingual English / Khmer.',
+    color: 'text-secondary',
+    bg: 'bg-secondary/10',
+    border: 'border-secondary/20',
+    glow: 'group-hover:shadow-[0_0_30px_hsl(var(--secondary)/0.10)]',
+  },
+  {
+    icon: Cloud,
+    title: 'LLMOps & Cloud',
+    desc: 'Tracing every query with Langfuse, multi-tenant data isolation, and shipping services to Kubernetes on AWS through CI/CD.',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+    glow: 'group-hover:shadow-[0_4px_30px_rgba(251,191,36,0.10)]',
+  },
+  {
     icon: Car,
     title: 'Reinforcement Learning',
     desc: 'Training end-to-end RL agents (PPO) to navigate complex environments — from autonomous driving in CARLA to curriculum-based multi-phase learning.',
@@ -187,15 +205,6 @@ const COMPETENCIES = [
     bg: 'bg-primary/10',
     border: 'border-primary/20',
     glow: 'group-hover:shadow-[0_0_30px_hsl(var(--primary)/0.12)]',
-  },
-  {
-    icon: Bot,
-    title: 'AI Platform Development',
-    desc: 'Building full-stack AI systems with RAG pipelines, vector search, and LLM orchestration — deployed in production to serve real users.',
-    color: 'text-secondary',
-    bg: 'bg-secondary/10',
-    border: 'border-secondary/20',
-    glow: 'group-hover:shadow-[0_0_30px_hsl(var(--secondary)/0.10)]',
   },
   {
     icon: BrainCircuit,
@@ -251,11 +260,11 @@ const Home = () => {
               <span className="text-primary">&gt;</span>
               <TypeAnimation
                 sequence={[
+                  'AI Engineer.', 2200,
+                  'LLM & RAG Engineer.', 2200,
                   'Reinforcement Learning Researcher.', 2200,
-                  'AI Platform Engineer.', 2200,
                   'Computer Vision Specialist.', 2200,
                   'Data Scientist.', 2200,
-                  'Deep Learning Engineer.', 2200,
                 ]}
                 wrapper="span" speed={55} deletionSpeed={70} repeat={Infinity} cursor={true}
               />
@@ -265,10 +274,10 @@ const Home = () => {
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
               className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-10"
             >
-              Final-year Data Science Engineering student at ITC, Cambodia.
+              AI Engineer at Sala, Data Science Engineering background from ITC, Cambodia.
               I build <span className="text-foreground font-medium">intelligent systems</span> —
               from training PPO agents to drive autonomously in simulation, to shipping{' '}
-              <span className="text-foreground font-medium">RAG-powered AI platforms</span> in production.
+              <span className="text-foreground font-medium">LLM & RAG products</span> on the cloud.
             </motion.p>
 
             <motion.div
@@ -303,7 +312,7 @@ const Home = () => {
           <h3 className="font-heading text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-6">
             Core Competencies
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
             {COMPETENCIES.map(({ icon: Icon, title, desc, color, bg, border, glow }) => (
               <div key={title} className={`glass-card group rounded-2xl p-6 relative overflow-hidden ${glow} transition-shadow duration-300`}>
                 <div className={`absolute -top-8 -right-8 w-32 h-32 ${bg} rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500`} />

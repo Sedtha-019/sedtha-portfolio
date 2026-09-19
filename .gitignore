@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Private notes
+NEW_SKILLS_AND_EXPERIENCE.md
